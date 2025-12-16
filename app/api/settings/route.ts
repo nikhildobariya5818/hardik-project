@@ -1,0 +1,31 @@
+import { getSupabaseServerClient } from "@/lib/supabase/server"
+import { type NextRequest, NextResponse } from "next/server"
+
+export async function GET() {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase.from("company_settings").select("*").single()
+
+    if (error) throw error
+
+    return NextResponse.json({ data })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const body = await request.json()
+
+    const { data, error } = await supabase.from("company_settings").update(body).eq("id", body.id).select().single()
+
+    if (error) throw error
+
+    return NextResponse.json({ data })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

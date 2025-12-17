@@ -12,6 +12,13 @@ async function fetchOrders(clientId?: string): Promise<Order[]> {
   return json.data
 }
 
+async function fetchOrdersBeforeMonth(year: number, month: number): Promise<Order[]> {
+  const res = await fetch(`/api/orders?before_year=${year}&before_month=${month}`)
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.error)
+  return json.data
+}
+
 export function useOrders() {
   return useQuery({
     queryKey: ["orders"],
@@ -24,6 +31,14 @@ export function useOrdersByClient(clientId: string) {
     queryKey: ["orders", "client", clientId],
     queryFn: () => fetchOrders(clientId),
     enabled: !!clientId,
+  })
+}
+
+export function useOrdersBeforeMonth(year: number, month: number) {
+  return useQuery({
+    queryKey: ["orders", "before", year, month],
+    queryFn: () => fetchOrdersBeforeMonth(year, month),
+    enabled: !!year && !!month,
   })
 }
 

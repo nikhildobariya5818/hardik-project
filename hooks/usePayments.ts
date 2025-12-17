@@ -4,8 +4,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Payment } from "@/lib/supabase/types"
 import { useToast } from "@/hooks/use-toast"
 
-async function fetchPayments(): Promise<Payment[]> {
-  const res = await fetch("/api/payments")
+async function fetchPayments(clientId?: string): Promise<Payment[]> {
+  const url = clientId ? `/api/payments?client_id=${clientId}` : "/api/payments"
+  const res = await fetch(url)
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.error)
+  return json.data
+}
+
+async function fetchPaymentsBeforeMonth(year: number, month: number): Promise<Payment[]> {
+  const res = await fetch(`/api/payments?before_year=${year}&before_month=${month}`)
   const json = await res.json()
   if (!res.ok) throw new Error(json.error)
   return json.data
@@ -14,7 +22,23 @@ async function fetchPayments(): Promise<Payment[]> {
 export function usePayments() {
   return useQuery({
     queryKey: ["payments"],
-    queryFn: fetchPayments,
+    queryFn: () => fetchPayments(),
+  })
+}
+
+export function usePaymentsByClient(clientId: string) {
+  return useQuery({
+    queryKey: ["payments", "client", clientId],
+    queryFn: () => fetchPayments(clientId),
+    enabled: !!clientId,
+  })
+}
+
+export function usePaymentsBeforeMonth(year: number, month: number) {
+  return useQuery({
+    queryKey: ["payments", "before", year, month],
+    queryFn: () => fetchPaymentsBeforeMonth(year, month),
+    enabled: !!year && !!month,
   })
 }
 

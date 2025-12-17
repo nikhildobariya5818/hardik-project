@@ -64,6 +64,107 @@ export function useUpdateSettings() {
   })
 }
 
+export function useAddMaterialRate() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (rate: { material: string; rate: number }) => {
+      const res = await fetch("/api/material-rates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          material_name: rate.material,
+          rate_per_mt: rate.rate,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      return json.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["material-rates"] })
+      toast({
+        title: "Rate Added",
+        description: "Material rate has been added successfully.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export function useUpdateMaterialRate() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (rate: { id: string; material?: string; rate: number }) => {
+      const payload: any = { id: rate.id, rate_per_mt: rate.rate }
+      if (rate.material) {
+        payload.material_name = rate.material
+      }
+      const res = await fetch("/api/material-rates", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      return json.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["material-rates"] })
+      toast({
+        title: "Rate Updated",
+        description: "Material rate has been updated.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export function useDeleteMaterialRate() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/material-rates?id=${id}`, {
+        method: "DELETE",
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      return json.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["material-rates"] })
+      toast({
+        title: "Rate Deleted",
+        description: "Material rate has been removed.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
 export function useUpdateMaterialRates() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -94,4 +195,90 @@ export function useUpdateMaterialRates() {
       })
     },
   })
+}
+
+export function useCompanySettings() {
+  return useSettings()
+}
+
+async function fetchVehicles() {
+  const res = await fetch("/api/vehicles")
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.error)
+  return json.data
+}
+
+export function useVehicles() {
+  return useQuery({
+    queryKey: ["vehicles"],
+    queryFn: fetchVehicles,
+  })
+}
+
+export function useAddVehicle() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (vehicle: { vehicleNumber: string }) => {
+      const res = await fetch("/api/vehicles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vehicle_number: vehicle.vehicleNumber,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      return json.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] })
+      toast({
+        title: "Vehicle Added",
+        description: "Vehicle has been added successfully.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export function useDeleteVehicle() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/vehicles?id=${id}`, {
+        method: "DELETE",
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      return json.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vehicles"] })
+      toast({
+        title: "Vehicle Deleted",
+        description: "Vehicle has been removed.",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export function useUpdateCompanySettings() {
+  return useUpdateSettings()
 }

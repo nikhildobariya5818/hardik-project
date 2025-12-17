@@ -32,6 +32,8 @@ export interface Order {
   total: number
   location: string | null
   truck_number: string | null
+  delivery_boy_name: string | null
+  delivery_boy_mobile: string | null
   notes: string | null
   created_by: string | null
   created_at: string
@@ -71,6 +73,11 @@ export interface CompanySettings {
   address: string | null
   phone: string | null
   gst_number: string | null
+  bank_name: string | null
+  account_number: string | null
+  ifsc_code: string | null
+  upi_id: string | null
+  logo_url: string | null
   invoice_prefix: string
   next_invoice_number: number
   updated_at: string

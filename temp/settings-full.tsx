@@ -17,7 +17,7 @@ import {
 import { useStaffMembers, useAddStaff, useDeleteStaff } from "@/hooks/useStaff"
 import { useAuth } from "@/contexts/AuthContext"
 import {
-  SettingsIcon,
+  Settings as SettingsIcon,
   Building2,
   Package,
   Truck,
@@ -55,13 +55,6 @@ export default function Settings() {
     phone: "",
     gst_number: "",
     invoice_prefix: "",
-    pan_number: "",
-    email: "",
-    bank_account: "",
-    bank_ifsc: "",
-    bank_name: "",
-    upi_id: "",
-    logo_url: "",
   })
   const [rates, setRates] = useState<{ material: MaterialType; rate: number }[]>([])
   const [newVehicle, setNewVehicle] = useState("")
@@ -79,13 +72,6 @@ export default function Settings() {
         phone: companySettings.phone || "",
         gst_number: companySettings.gst_number || "",
         invoice_prefix: companySettings.invoice_prefix || "",
-        pan_number: companySettings.pan_number || "",
-        email: companySettings.email || "",
-        bank_account: companySettings.bank_account || "",
-        bank_ifsc: companySettings.bank_ifsc || "",
-        bank_name: companySettings.bank_name || "",
-        upi_id: companySettings.upi_id || "",
-        logo_url: companySettings.logo_url || "",
       })
     }
   }, [companySettings])
@@ -191,28 +177,13 @@ export default function Settings() {
                   <Input value={company.phone} onChange={(e) => setCompany({ ...company, phone: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input value={company.email} onChange={(e) => setCompany({ ...company, email: e.target.value })} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
                   <Label>GST Number</Label>
                   <Input
                     value={company.gst_number}
                     onChange={(e) => setCompany({ ...company, gst_number: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>PAN Number</Label>
-                  <Input
-                    value={company.pan_number}
-                    onChange={(e) => setCompany({ ...company, pan_number: e.target.value })}
-                  />
-                </div>
               </div>
-
               <div className="space-y-2">
                 <Label>Invoice Prefix</Label>
                 <Input
@@ -221,66 +192,6 @@ export default function Settings() {
                   className="max-w-[200px]"
                 />
               </div>
-
-              <div className="pt-4 border-t">
-                <h3 className="text-md font-semibold mb-3">Bank Details</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Bank Name</Label>
-                    <Input
-                      value={company.bank_name}
-                      onChange={(e) => setCompany({ ...company, bank_name: e.target.value })}
-                      placeholder="e.g., KOTAK MAHINDRA BANK LIMITED"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Account Number</Label>
-                      <Input
-                        value={company.bank_account}
-                        onChange={(e) => setCompany({ ...company, bank_account: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>IFSC Code</Label>
-                      <Input
-                        value={company.bank_ifsc}
-                        onChange={(e) => setCompany({ ...company, bank_ifsc: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>UPI ID (for QR Code)</Label>
-                    <Input
-                      value={company.upi_id}
-                      onChange={(e) => setCompany({ ...company, upi_id: e.target.value })}
-                      placeholder="yourname@bank"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <h3 className="text-md font-semibold mb-3">Branding</h3>
-                <div className="space-y-2">
-                  <Label>Logo URL</Label>
-                  <Input
-                    value={company.logo_url}
-                    onChange={(e) => setCompany({ ...company, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  {company.logo_url && (
-                    <div className="mt-2">
-                      <img
-                        src={company.logo_url || "/placeholder.svg"}
-                        alt="Company Logo"
-                        className="h-16 object-contain"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
               <Button onClick={handleSaveCompany} disabled={updateSettings.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {updateSettings.isPending ? "Saving..." : "Save Changes"}

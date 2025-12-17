@@ -6,6 +6,8 @@ export async function GET(request: NextRequest) {
     const supabase = await getSupabaseServerClient()
     const searchParams = request.nextUrl.searchParams
     const clientId = searchParams.get("client_id")
+    const beforeYear = searchParams.get("before_year")
+    const beforeMonth = searchParams.get("before_month")
 
     let query = supabase
       .from("orders")
@@ -20,6 +22,11 @@ export async function GET(request: NextRequest) {
 
     if (clientId) {
       query = query.eq("client_id", clientId)
+    }
+
+    if (beforeYear && beforeMonth) {
+      const beforeDate = `${beforeYear}-${beforeMonth.padStart(2, "0")}-01`
+      query = query.lt("order_date", beforeDate)
     }
 
     const { data, error } = await query

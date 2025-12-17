@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import type { Database } from "./types"
 
@@ -14,7 +14,7 @@ export async function getSupabaseServerClient() {
     )
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll()
@@ -28,4 +28,8 @@ export async function getSupabaseServerClient() {
       },
     },
   })
+}
+
+export async function createServerClient() {
+  return getSupabaseServerClient()
 }

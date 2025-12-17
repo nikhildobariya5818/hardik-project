@@ -43,8 +43,6 @@ export default function Orders() {
   const [printOrder, setPrintOrder] = useState<Order | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
 
-  const [clientSearch, setClientSearch] = useState("")
-
   const [newOrder, setNewOrder] = useState({
     client_id: "",
     order_date: format(new Date(), "yyyy-MM-dd"),
@@ -54,8 +52,6 @@ export default function Orders() {
     rate: "",
     location: "",
     truck_number: "",
-    delivery_boy_name: "",
-    delivery_boy_mobile: "",
     notes: "",
   })
 
@@ -68,16 +64,10 @@ export default function Orders() {
     rate: "",
     location: "",
     truck_number: "",
-    delivery_boy_name: "",
-    delivery_boy_mobile: "",
     notes: "",
   })
 
   const isLoading = ordersLoading || clientsLoading
-
-  const filteredClientsForDropdown = clients.filter((client) =>
-    client.name.toLowerCase().includes(clientSearch.toLowerCase()),
-  )
 
   const filteredOrders = orders.filter((order) => {
     const clientName = order.clients?.name || ""
@@ -128,8 +118,6 @@ export default function Orders() {
       total: calculateTotal(),
       location: newOrder.location || undefined,
       truck_number: newOrder.truck_number || undefined,
-      delivery_boy_name: newOrder.delivery_boy_name || undefined,
-      delivery_boy_mobile: newOrder.delivery_boy_mobile || undefined,
       notes: newOrder.notes || undefined,
     })
 
@@ -143,11 +131,8 @@ export default function Orders() {
       rate: "",
       location: "",
       truck_number: "",
-      delivery_boy_name: "",
-      delivery_boy_mobile: "",
       notes: "",
     })
-    setClientSearch("")
   }
 
   const handleDeleteOrder = async () => {
@@ -168,8 +153,6 @@ export default function Orders() {
       rate: order.rate.toString(),
       location: order.location || "",
       truck_number: order.truck_number || "",
-      delivery_boy_name: order.delivery_boy_name || "",
-      delivery_boy_mobile: order.delivery_boy_mobile || "",
       notes: order.notes || "",
     })
   }
@@ -187,8 +170,6 @@ export default function Orders() {
         total: calculateEditTotal(),
         location: editForm.location || undefined,
         truck_number: editForm.truck_number || undefined,
-        delivery_boy_name: editForm.delivery_boy_name || undefined,
-        delivery_boy_mobile: editForm.delivery_boy_mobile || undefined,
         notes: editForm.notes || undefined,
       })
       setEditOrder(null)
@@ -209,7 +190,6 @@ export default function Orders() {
                 <style>
                   body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
                   .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
-                  .logo { max-width: 120px; margin: 0 auto 10px; }
                   .company { font-size: 18px; font-weight: bold; }
                   .info-row { display: flex; justify-content: space-between; padding: 5px 0; }
                   .label { color: #666; }
@@ -270,12 +250,6 @@ export default function Orders() {
               <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
                 <div className="space-y-2">
                   <Label>Client</Label>
-                  <Input
-                    placeholder="Search client by name..."
-                    value={clientSearch}
-                    onChange={(e) => setClientSearch(e.target.value)}
-                    className="mb-2"
-                  />
                   <Select
                     value={newOrder.client_id}
                     onValueChange={(value) => setNewOrder({ ...newOrder, client_id: value })}
@@ -284,7 +258,7 @@ export default function Orders() {
                       <SelectValue placeholder="Select client" />
                     </SelectTrigger>
                     <SelectContent>
-                      {filteredClientsForDropdown.map((client) => (
+                      {clients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
                           {client.name}
                         </SelectItem>
@@ -378,25 +352,6 @@ export default function Orders() {
                     value={newOrder.truck_number}
                     onChange={(e) => setNewOrder({ ...newOrder, truck_number: e.target.value })}
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Delivery Boy Name</Label>
-                    <Input
-                      placeholder="Driver name"
-                      value={newOrder.delivery_boy_name}
-                      onChange={(e) => setNewOrder({ ...newOrder, delivery_boy_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Mobile Number</Label>
-                    <Input
-                      placeholder="9876543210"
-                      value={newOrder.delivery_boy_mobile}
-                      onChange={(e) => setNewOrder({ ...newOrder, delivery_boy_mobile: e.target.value })}
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -533,9 +488,8 @@ export default function Orders() {
                   <p className="font-semibold text-lg">{order.clients?.name || "Unknown"}</p>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                     <Calendar className="h-4 w-4" />
-                    <span>
-                      {format(new Date(order.order_date), "dd MMM")} • {order.order_time}
-                    </span>
+                    <span>{format(new Date(order.order_date), "dd MMM")}</span>
+                    <span>{order.order_time}</span>
                   </div>
                 </div>
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -543,66 +497,51 @@ export default function Orders() {
                 </span>
               </div>
 
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+              <div className="space-y-2 mb-3">
+                <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Weight:</span>
                   <span className="font-medium">{Number(order.weight).toFixed(3)} MT</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Rate:</span>
-                  <span className="font-medium">₹{Number(order.rate)}/MT</span>
+                  <span>₹{Number(order.rate)}/MT</span>
                 </div>
                 {order.location && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Location:</span>
-                    <span className="font-medium">{order.location}</span>
+                    <span>{order.location}</span>
                   </div>
                 )}
                 {order.truck_number && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Truck:</span>
-                    <span className="font-medium">{order.truck_number}</span>
+                    <span>{order.truck_number}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-border">
-                  <span className="font-medium">Total:</span>
-                  <span className="font-semibold text-success text-lg">
-                    ₹{Number(order.total).toLocaleString("en-IN")}
-                  </span>
-                </div>
               </div>
 
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 bg-transparent"
-                  onClick={() => handlePrintOrder(order)}
-                >
-                  <Printer className="h-4 w-4 mr-1" />
-                  Print
-                </Button>
-                {isAdmin && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 bg-transparent"
-                      onClick={() => handleEditOrder(order)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive hover:text-destructive bg-transparent"
-                      onClick={() => setDeleteOrderId(order.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
+              <div className="flex justify-between items-center pt-3 border-t border-border">
+                <p className="font-semibold text-lg text-success">₹{Number(order.total).toLocaleString("en-IN")}</p>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePrintOrder(order)}>
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                  {isAdmin && (
+                    <>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditOrder(order)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => setDeleteOrderId(order.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -728,25 +667,6 @@ export default function Orders() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Delivery Boy Name</Label>
-                  <Input
-                    placeholder="Driver name"
-                    value={editForm.delivery_boy_name}
-                    onChange={(e) => setEditForm({ ...editForm, delivery_boy_name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Mobile Number</Label>
-                  <Input
-                    placeholder="9876543210"
-                    value={editForm.delivery_boy_mobile}
-                    onChange={(e) => setEditForm({ ...editForm, delivery_boy_mobile: e.target.value })}
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label>Notes (Optional)</Label>
                 <Input value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
@@ -780,21 +700,22 @@ export default function Orders() {
           <div className="hidden">
             <div ref={printRef}>
               <div className="header">
-                {companySettings?.logo_url && (
-                  <img src={companySettings.logo_url || "/placeholder.svg"} alt="Company Logo" className="logo" />
-                )}
-                <div className="company">{companySettings?.company_name || "DeliveryPro"}</div>
-                <div>{companySettings?.phone || ""}</div>
+                <div className="company">{companySettings?.company_name || "Company"}</div>
+                <div style={{ fontSize: "12px", color: "#666" }}>{companySettings?.address}</div>
+                <div style={{ fontSize: "12px", color: "#666" }}>Ph: {companySettings?.phone}</div>
+              </div>
+              <h3 style={{ textAlign: "center", margin: "15px 0" }}>DELIVERY RECEIPT</h3>
+              <div className="info-row">
+                <span className="label">Date:</span>
+                <span className="value">{format(new Date(printOrder.order_date), "dd/MM/yyyy")}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">Time:</span>
+                <span className="value">{printOrder.order_time}</span>
               </div>
               <div className="info-row">
                 <span className="label">Client:</span>
                 <span className="value">{printOrder.clients?.name}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Date:</span>
-                <span className="value">
-                  {format(new Date(printOrder.order_date), "dd/MM/yyyy")} {printOrder.order_time}
-                </span>
               </div>
               <div className="info-row">
                 <span className="label">Material:</span>
@@ -816,25 +737,15 @@ export default function Orders() {
               )}
               {printOrder.truck_number && (
                 <div className="info-row">
-                  <span className="label">Truck:</span>
+                  <span className="label">Truck No:</span>
                   <span className="value">{printOrder.truck_number}</span>
                 </div>
               )}
-              {printOrder.delivery_boy_name && (
+              <div className="total">
                 <div className="info-row">
-                  <span className="label">Delivery Boy:</span>
-                  <span className="value">{printOrder.delivery_boy_name}</span>
+                  <span className="label">Total:</span>
+                  <span className="value">₹{Number(printOrder.total).toLocaleString("en-IN")}</span>
                 </div>
-              )}
-              {printOrder.delivery_boy_mobile && (
-                <div className="info-row">
-                  <span className="label">Mobile:</span>
-                  <span className="value">{printOrder.delivery_boy_mobile}</span>
-                </div>
-              )}
-              <div className="info-row total">
-                <span className="label">Total:</span>
-                <span className="value">₹{Number(printOrder.total).toLocaleString("en-IN")}</span>
               </div>
             </div>
           </div>

@@ -1,15 +1,14 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { usePayments, useAddPayment, useDeletePayment } from "@/hooks/usePayments"
 import { useClients } from "@/hooks/useClients"
-import { useCompanySettings } from "@/hooks/useSettings"
 import { useAuth } from "@/contexts/AuthContext"
-import type { PaymentMode, Payment } from "@/types"
+import type { PaymentMode } from "@/types"
 import {
   CreditCard,
   Plus,
@@ -21,7 +20,6 @@ import {
   Building2,
   Loader2,
   Trash2,
-  Printer,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -47,12 +45,8 @@ export default function Payments() {
   const { isAdmin } = useAuth()
   const { data: payments = [], isLoading: paymentsLoading } = usePayments()
   const { data: clients = [], isLoading: clientsLoading } = useClients()
-  const { data: companySettings } = useCompanySettings()
   const addPayment = useAddPayment()
   const deletePayment = useDeletePayment()
-
-  const printRef = useRef<HTMLDivElement>(null)
-  const [printPayment, setPrintPayment] = useState<Payment | null>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -102,48 +96,6 @@ export default function Payments() {
       await deletePayment.mutateAsync(deletePaymentId)
       setDeletePaymentId(null)
     }
-  }
-
-  const handlePrintPaymentSlip = (payment: Payment) => {
-    setPrintPayment(payment)
-    setTimeout(() => {
-      const printContent = printRef.current
-      if (printContent) {
-        const printWindow = window.open("", "_blank")
-        if (printWindow) {
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>Payment Receipt</title>
-                <style>
-                  body { font-family: Arial, sans-serif; padding: 30px; max-width: 600px; margin: 0 auto; }
-                  .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 20px; }
-                  .logo { max-width: 100px; margin: 0 auto 15px; }
-                  .company-name { font-size: 24px; font-weight: bold; color: #0d9488; margin-bottom: 5px; }
-                  .receipt-title { font-size: 18px; font-weight: bold; margin: 20px 0; text-align: center; background: #f0f0f0; padding: 10px; }
-                  .info-section { margin: 20px 0; }
-                  .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-                  .label { color: #666; font-weight: 500; }
-                  .value { font-weight: 600; }
-                  .amount-box { background: #f0fdf4; border: 2px solid #0d9488; padding: 20px; margin: 20px 0; text-align: center; }
-                  .amount-label { font-size: 14px; color: #666; margin-bottom: 10px; }
-                  .amount-value { font-size: 32px; font-weight: bold; color: #0d9488; }
-                  .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; font-size: 12px; }
-                  @media print { body { padding: 0; } }
-                </style>
-              </head>
-              <body>
-                ${printContent.innerHTML}
-              </body>
-            </html>
-          `)
-          printWindow.document.close()
-          printWindow.print()
-          printWindow.close()
-        }
-      }
-      setPrintPayment(null)
-    }, 100)
   }
 
   if (isLoading) {
@@ -302,14 +254,6 @@ export default function Payments() {
                         {Number(payment.amount).toLocaleString("en-IN")}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="flex-shrink-0"
-                      onClick={() => handlePrintPaymentSlip(payment)}
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
                     {isAdmin && (
                       <Button
                         variant="ghost"
@@ -352,56 +296,6 @@ export default function Payments() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {printPayment && (
-          <div className="hidden">
-            <div ref={printRef}>
-              <div className="header">
-                {companySettings?.logo_url && (
-                  <img src={companySettings.logo_url || "/placeholder.svg"} alt="Logo" className="logo" />
-                )}
-                <div className="company-name">{companySettings?.company_name || "Your Company"}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>{companySettings?.address}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>Phone: {companySettings?.phone}</div>
-              </div>
-
-              <div className="receipt-title">PAYMENT RECEIPT</div>
-
-              <div className="info-section">
-                <div className="info-row">
-                  <span className="label">Receipt Date:</span>
-                  <span className="value">{format(new Date(printPayment.payment_date), "dd MMM yyyy")}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Received From:</span>
-                  <span className="value">{printPayment.clients?.name}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Payment Mode:</span>
-                  <span className="value">{printPayment.mode}</span>
-                </div>
-                {printPayment.notes && (
-                  <div className="info-row">
-                    <span className="label">Notes:</span>
-                    <span className="value">{printPayment.notes}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="amount-box">
-                <div className="amount-label">Amount Received</div>
-                <div className="amount-value">₹ {Number(printPayment.amount).toLocaleString("en-IN")}</div>
-              </div>
-
-              <div className="footer">
-                <p>Thank you for your payment!</p>
-                <p style={{ marginTop: "10px" }}>
-                  This is a computer-generated receipt and does not require a signature.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </MainLayout>
   )

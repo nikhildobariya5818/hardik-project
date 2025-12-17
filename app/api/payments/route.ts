@@ -1,11 +1,15 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await getSupabaseServerClient()
+    const searchParams = request.nextUrl.searchParams
+    const clientId = searchParams.get("client_id")
+    const beforeYear = searchParams.get("before_year")
+    const beforeMonth = searchParams.get("before_month")
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("payments")
       .select(`
         *,
@@ -14,6 +18,17 @@ export async function GET() {
         )
       `)
       .order("payment_date", { ascending: false })
+
+    if (clientId) {
+      query = query.eq("client_id", clientId)
+    }
+
+    if (beforeYear && beforeMonth) {
+      const beforeDate = `${beforeYear}-${beforeMonth.padStart(2, "0")}-01`
+      query = query.lt("payment_date", beforeDate)
+    }
+
+    const { data, error } = await query
 
     if (error) throw error
 

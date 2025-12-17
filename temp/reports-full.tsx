@@ -1,5 +1,3 @@
-"use client"
-
 import { MainLayout } from "@/components/layout/MainLayout"
 import { StatCard } from "@/components/ui/stat-card"
 import { useOrders } from "@/hooks/useOrders"

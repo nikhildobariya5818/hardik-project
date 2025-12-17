@@ -13,6 +13,9 @@ export interface Client {
   city: string
   phone: string
   address?: string
+  state?: string
+  pincode?: string
+  gst_number?: string
   opening_balance: number
   current_balance: number
   created_at: string
@@ -27,7 +30,9 @@ export interface Order {
   order_date: string
   order_time: string
   weight: number
+  order_number?: string
   material: MaterialType
+  quantity?: number
   rate: number
   total: number
   location: string | null
@@ -74,6 +79,8 @@ export interface CompanySettings {
   phone: string | null
   gst_number: string | null
   bank_name: string | null
+  bank_account?: string | null
+  bank_ifsc?: string | null
   account_number: string | null
   ifsc_code: string | null
   upi_id: string | null
@@ -100,6 +107,10 @@ export interface Invoice {
   paid_amount: number
   remaining_balance: number
   created_at: string
+  clients?: {
+    name: string
+    city: string
+  }
 }
 
 export interface Profile {
@@ -115,6 +126,17 @@ export interface UserRoleRecord {
   id: string
   user_id: string
   role: UserRole
+  created_at: string
+}
+
+export interface InvoiceItem {
+  id: string
+  invoice_id: string
+  order_id: string | null
+  description: string
+  quantity: number
+  rate: number
+  amount: number
   created_at: string
 }
 
@@ -158,6 +180,11 @@ export interface Database {
         Row: Invoice
         Insert: Omit<Invoice, "id" | "created_at">
         Update: Partial<Omit<Invoice, "id" | "created_at">>
+      }
+      invoice_items: {
+        Row: InvoiceItem
+        Insert: Omit<InvoiceItem, "id" | "created_at">
+        Update: Partial<Omit<InvoiceItem, "id" | "created_at">>
       }
       profiles: {
         Row: Profile

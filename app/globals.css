@@ -165,3 +165,117 @@
     transform: scale(1);
   }
 }
+
+/* Added professional print styles for invoice PDF generation */
+@media print {
+  /* Updated print styles to properly show invoice content */
+  /* Hide all non-essential elements during print */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show the print container and all its children */
+  .print-container,
+  .print-container * {
+    visibility: visible !important;
+  }
+
+  /* Position the print container at the top of the page */
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide navigation and buttons */
+  .print\:hidden,
+  nav,
+  aside,
+  footer,
+  button:not(.print\:block) {
+    display: none !important;
+  }
+
+  /* Show only the invoice content */
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+  }
+
+  /* Ensure proper page breaks */
+  .print\:page-break-before {
+    page-break-before: always;
+  }
+
+  .print\:page-break-after {
+    page-break-after: always;
+  }
+
+  .print\:no-break {
+    page-break-inside: avoid;
+  }
+
+  /* Override colors for print */
+  * {
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Make sure tables don't break awkwardly */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Ensure text is readable */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Remove shadows and transitions for print */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+
+  /* Override gradient backgrounds for print-friendly versions */
+  .bg-gradient-to-br,
+  .bg-gradient-to-r,
+  .bg-gradient-to-l {
+    background: #f5f5f5 !important;
+    color: #000 !important;
+  }
+
+  /* Ensure borders are visible */
+  .border,
+  .border-t,
+  .border-b,
+  .border-l,
+  .border-r {
+    border-color: #d4d4d4 !important;
+  }
+}

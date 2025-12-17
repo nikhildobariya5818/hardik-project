@@ -145,19 +145,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 6,
     color: "#1a1a1a",
-    backgroundColor: "#f0f0f0",
-    padding: 4,
+    backgroundColor: "#e8f4f8",
+    padding: 5,
+    borderLeft: 3,
+    borderLeftColor: "#2563eb",
   },
   clientName: {
     fontSize: 11,
     fontWeight: "bold",
-    marginBottom: 3,
+    marginBottom: 4,
     color: "#1a1a1a",
   },
   clientDetails: {
     fontSize: 8,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
     color: "#333",
+    paddingLeft: 8,
   },
   table: {
     marginTop: 15,
@@ -183,18 +186,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   col5: { width: "5%", padding: 5, borderRight: 1, borderColor: "#ddd", justifyContent: "center" },
-  col20: { width: "20%", padding: 5, borderRight: 1, borderColor: "#ddd", justifyContent: "center" },
-  col15: { width: "15%", padding: 5, borderRight: 1, borderColor: "#ddd", justifyContent: "center" },
-  col10: {
-    width: "10%",
+  col30: { width: "30%", padding: 5, borderRight: 1, borderColor: "#ddd", justifyContent: "center" },
+  col20: {
+    width: "20%",
     padding: 5,
     borderRight: 1,
     borderColor: "#ddd",
     textAlign: "right",
     justifyContent: "center",
   },
-  col18: {
-    width: "18%",
+  col22: {
+    width: "22%",
     padding: 5,
     borderRight: 1,
     borderColor: "#ddd",
@@ -274,27 +276,32 @@ export default function InvoicePDF({ company, client, orders, invoiceNumber, inv
           <View style={styles.billingRow}>
             <View style={styles.billingCol}>
               <Text style={styles.billingTitle}>Billed To:</Text>
-              <Text style={styles.clientName}>{client.name}</Text>
-              <Text style={styles.clientDetails}>
-                {client.address || "N/A"}
-                {"\n"}
-                {client.city || ""}, {client.state || "Gujarat"} - {client.pincode || ""}
-                {"\n"}
-                Party PAN: {client.pan_number || "N/A"}
-                {"\n"}
-                Mobile: {client.phone}
-                {"\n"}
-                GSTIN: {client.gst_number || "Unregistered"}
-              </Text>
+              <View style={{ padding: 8, backgroundColor: "#f8f9fa", borderRadius: 4 }}>
+                <Text style={styles.clientName}>{client.name}</Text>
+                <Text style={styles.clientDetails}>
+                  {client.address || "N/A"}
+                  {"\n"}
+                  {client.city || ""}, {client.state || "Gujarat"} - {client.pincode || ""}
+                  {"\n"}
+                  {"\n"}
+                  Phone: {client.phone}
+                  {"\n"}
+                  {client.gst_number && `GSTIN: ${client.gst_number}`}
+                  {"\n"}
+                  {client.pan_number && `PAN: ${client.pan_number}`}
+                </Text>
+              </View>
             </View>
             <View style={styles.billingCol}>
               <Text style={styles.billingTitle}>Shipped To:</Text>
-              <Text style={styles.clientName}>{client.name}</Text>
-              <Text style={styles.clientDetails}>
-                {client.address || "N/A"}
-                {"\n"}
-                {client.city || ""}, {client.state || "Gujarat"} - {client.pincode || ""}
-              </Text>
+              <View style={{ padding: 8, backgroundColor: "#f8f9fa", borderRadius: 4 }}>
+                <Text style={styles.clientName}>{client.name}</Text>
+                <Text style={styles.clientDetails}>
+                  {client.address || "N/A"}
+                  {"\n"}
+                  {client.city || ""}, {client.state || "Gujarat"} - {client.pincode || ""}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -302,36 +309,35 @@ export default function InvoicePDF({ company, client, orders, invoiceNumber, inv
           <View style={styles.table}>
             <View style={styles.tableHeader}>
               <Text style={styles.col5}>Sr.</Text>
-              <Text style={styles.col20}>Description of Goods</Text>
-              <Text style={styles.col15}>HSN/SAC Code</Text>
-              <Text style={styles.col15}>Quantity (MT)</Text>
-              <Text style={styles.col18}>Rate (₹/MT)</Text>
-              <Text style={styles.col18}>Amount (₹)</Text>
+              <Text style={styles.col30}>Description of Goods</Text>
+              <Text style={styles.col20}>Quantity (MT)</Text>
+              <Text style={styles.col22}>Rate (₹/MT)</Text>
+              <Text style={styles.col22}>Amount (₹)</Text>
             </View>
 
-            {orders.map((order, index) => (
-              <View key={order.id} style={[styles.tableRow, index % 2 === 1 && styles.tableRowAlt]}>
-                <Text style={styles.col5}>{index + 1}</Text>
-                <Text style={styles.col20}>
-                  {order.material || "Material"}
-                  {"\n"}
-                  {/* <Text style={{ fontSize: 7, color: "#666" }}>Order #{order.order_number}</Text> */}
-                </Text>
-                <Text style={styles.col15}>2517</Text>
-                <Text style={styles.col15}>{Number(order.quantity).toFixed(2)}</Text>
-                <Text style={styles.col18}>{Number(order.rate).toFixed(2)}</Text>
-                <Text style={styles.col18}>{Number(order.total).toFixed(2)}</Text>
-              </View>
-            ))}
+            {orders.map((order, index) => {
+              const quantity = Number(order.quantity) || 0
+              const rate = Number(order.rate) || 0
+              const total = Number(order.total) || 0
+
+              return (
+                <View key={order.id} style={[styles.tableRow, index % 2 === 1 && styles.tableRowAlt]}>
+                  <Text style={styles.col5}>{index + 1}</Text>
+                  <Text style={styles.col30}>{order.material || "Material"}</Text>
+                  <Text style={styles.col20}>{quantity.toFixed(2)}</Text>
+                  <Text style={styles.col22}>{rate.toFixed(2)}</Text>
+                  <Text style={styles.col22}>{total.toFixed(2)}</Text>
+                </View>
+              )
+            })}
 
             {/* GRAND TOTAL */}
             <View style={styles.totalRow}>
               <Text style={{ ...styles.col5 }}></Text>
-              <Text style={{ ...styles.col20, fontWeight: "bold", padding: 8 }}>GRAND TOTAL</Text>
-              <Text style={styles.col15}></Text>
-              <Text style={styles.col15}></Text>
-              <Text style={styles.col18}></Text>
-              <Text style={{ ...styles.col18, fontWeight: "bold", fontSize: 11, padding: 8 }}>
+              <Text style={{ ...styles.col30, fontWeight: "bold", padding: 8 }}>GRAND TOTAL</Text>
+              <Text style={styles.col20}></Text>
+              <Text style={styles.col22}></Text>
+              <Text style={{ ...styles.col22, fontWeight: "bold", fontSize: 11, padding: 8 }}>
                 ₹ {grandTotal.toFixed(2)}
               </Text>
             </View>

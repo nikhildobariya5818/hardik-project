@@ -10,6 +10,18 @@ import { Loader2, ArrowLeft, Pencil, Download } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
+import { InvoicePDF } from "@/components/invoice/InvoicePDF"
+
+const PDFDownloadLink = dynamic(() => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink), {
+  ssr: false,
+  loading: () => (
+    <Button disabled>
+      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      Loading PDF...
+    </Button>
+  ),
+})
 
 export default function ViewInvoice() {
   const params = useParams()
@@ -20,31 +32,12 @@ export default function ViewInvoice() {
   const { data, isLoading } = useInvoice(invoiceId)
   const { data: companySettings } = useCompanySettings()
 
-  const handlePrint = async () => {
-    if (!invoiceRef.current) return
-
-    try {
-      // Dynamically import html2pdf to avoid SSR issues
-      const html2pdf = (await import("html2pdf.js")).default
-
-      const element = invoiceRef.current
-      const invoice = data?.invoice
-
-      const opt = {
-        margin: 10,
-        filename: `Invoice-${invoice?.invoice_number || invoiceId}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      }
-
-      html2pdf().set(opt).from(element).save()
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      // Fallback to browser print
-      window.print()
-    }
-  }
+  console.log("[v0] Invoice data:", {
+    invoice: data?.invoice,
+    items: data?.items,
+    client: data?.invoice?.clients,
+    companySettings,
+  })
 
   if (isLoading) {
     return (
@@ -72,6 +65,8 @@ export default function ViewInvoice() {
   const { invoice, items } = data
   const client = invoice.clients
 
+  const canGeneratePDF = invoice && client && companySettings && items && items.length > 0
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -89,10 +84,46 @@ export default function ViewInvoice() {
                 Edit
               </Button>
             </Link>
-            <Button onClick={handlePrint}>
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
+            {canGeneratePDF ? (
+              <PDFDownloadLink
+                document={
+                  <InvoicePDF invoice={invoice} items={items} client={client} companySettings={companySettings} />
+                }
+                fileName={`Invoice-${invoice.invoice_number}.pdf`}
+              >
+                {({ loading, error }) => {
+                  console.log("[v0] PDF Link state:", { loading, error })
+                  if (error) {
+                    console.error("[v0] PDF generation error:", error)
+                    return (
+                      <Button variant="destructive" disabled>
+                        Error generating PDF
+                      </Button>
+                    )
+                  }
+                  return (
+                    <Button disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Preparing PDF...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download PDF
+                        </>
+                      )}
+                    </Button>
+                  )
+                }}
+              </PDFDownloadLink>
+            ) : (
+              <Button disabled>
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
+            )}
           </div>
         </div>
 
